@@ -1,0 +1,68 @@
+# Support for parsing JSON requests and sending JSON responses in Connect
+
+connect_json = ^(req, res, next) {
+  # A request method for ending the response with a JSON payload
+  res.endJSON = ^(object) {
+    if (arguments.keywords) {
+      # Use Move keyword arguments as the object
+      object = arguments.keywords
+      delete object.__kw
+    }
+    body = JSON object
+    res.setHeader 'Content-Type', 'application/json'
+    res.setHeader 'Content-Length', Text body.length
+    res.end body
+  }
+
+  # Read and parse JSON request payloads, later accessible from req.message
+  if (req.method == 'POST' || req.method == 'PUT') {
+    ct = req.headers['content-type']
+    length = parseInt req.headers['content-length']
+    if (isNaN length) {
+      res.statusCode = 400
+      res.end 'Missing or malformed Content-Length header in request'
+      return
+    } else if (length > connect_json.max_request_body_size) {
+      # We don't handle requests this big
+      return next()
+    }
+    if (ct && ct.indexOf('application/json') == 0) {
+      buffer = ''
+      req.on 'data', ^(chunk) {
+        if (buffer.length + chunk.length > length) {
+          # Kill the connection on suspected buffer overflow attempt
+          req.connection.destroy()
+          return
+        }
+        buffer += chunk
+      }
+      req.on 'end', ^{
+        # Parse JSON payload
+        try {
+          message = JSON.parse buffer
+        } catch (err) {
+          res.statusCode = 400
+          res.end 'Malformed JSON: '+(err.message || err)
+          return
+        }
+        # Add message to req.message or set/replace it
+        if (req.message && message && typeof message == 'object' &&
+            typeof req.message == 'object') {
+          for (k in message) req.message[k] = message[k]
+        } else {
+          req.message = message
+        }
+        next()
+      }
+      # "wait" for the request to complete
+      return
+    }
+  }
+  # This is not a request with a JSON payload. Just move along.
+  next()
+}
+
+# Maximum size of a request body to parse (only applies to application/json)
+connect_json.max_request_body_size = 5 * 1024000
+
+module.exports = connect_json

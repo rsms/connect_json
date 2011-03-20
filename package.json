@@ -1,0 +1,11 @@
+{ "name":        "connect_json",
+  "version":     "0.1.0",
+  "description": "Support for parsing JSON requests and sending JSON responses in Connect",
+  "homepage":    "https://github.com/rsms/connect_json",
+  "author":      "Rasmus Andersson (http://rsms.me/)",
+  "main":        "connect_json.mv",
+  "keywords":    ["connect", "move"],
+  "engines":     {"node": ">=0.3.0"},
+  "repository":  {"type": "git", "url": "http://github.com/rsms/connect_json.git"},
+  "dependencies":{ "move": ">=0.2.3", "connect": ">=1.1.1" }
+}
