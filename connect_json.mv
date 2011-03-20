@@ -28,6 +28,7 @@ connect_json = ^(req, res, next) {
     }
     if (ct && ct.indexOf('application/json') == 0) {
       buffer = ''
+      req.setEncoding 'utf8'
       req.on 'data', ^(chunk) {
         if (buffer.length + chunk.length > length) {
           # Kill the connection on suspected buffer overflow attempt
