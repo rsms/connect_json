@@ -1,3 +1,4 @@
+[![build status](https://secure.travis-ci.org/rsms/connect_json.png)](http://travis-ci.org/rsms/connect_json)
 # connect_json
 
 Support for parsing JSON requests and sending JSON responses in [Connect](http://senchalabs.github.com/connect/)
